@@ -50,6 +50,47 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function robotMove() {
+        const preventLossIndex = findPreventLossIndex();
+        const winIndex = preventLossIndex === -1 ? findWinIndex() : -1;
+        
+        const robotIndex = (preventLossIndex !== -1) ? preventLossIndex : (winIndex !== -1) ? winIndex : getRandomIndex();
+
+        cells[robotIndex] = "O";
+        renderBoard();
+        
+        if (checkWin()) {
+            resultMessage.textContent = "A robot nyert!";
+            gameEnded = true;
+        } else {
+            currentPlayer = "X";
+        }
+    }
+
+    function findPreventLossIndex() {
+        for (let i = 0; i < 9; i++) {
+            if (cells[i] === "") {
+                cells[i] = "X";
+                const preventLoss = checkWin();
+                cells[i] = "";
+                if (preventLoss) return i;
+            }
+        }
+        return -1;
+    }
+
+    function findWinIndex() {
+        for (let i = 0; i < 9; i++) {
+            if (cells[i] === "") {
+                cells[i] = "O";
+                const win = checkWin();
+                cells[i] = "";
+                if (win) return i;
+            }
+        }
+        return -1;
+    }
+
+    function getRandomIndex() {
         const emptyCells = cells.reduce((acc, value, index) => {
             if (value === "") {
                 acc.push(index);
@@ -57,17 +98,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return acc;
         }, []);
         const randomIndex = Math.floor(Math.random() * emptyCells.length);
-        const robotIndex = emptyCells[randomIndex];
-        cells[robotIndex] = "O";
-        const robotCell = board.querySelector(`[data-index='${robotIndex}']`);
-        const img = robotCell.querySelector(".player-icon");
-        img.src = "https://ocdn.eu/images/pulscms/OGQ7MDA_/ed526a9db4576b6660ab856f1a2ab5cd.jpeg";
-        if (checkWin()) {
-            resultMessage.textContent = "A robot nyert!";
-            gameEnded = true;
-        } else {
-            currentPlayer = "X";
-        }
+        return emptyCells[randomIndex];
     }
 
     function checkWin() {
